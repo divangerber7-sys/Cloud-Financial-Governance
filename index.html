@@ -1,0 +1,1314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>MGSA Cloud Financial Governance Dashboard — Independent Portfolio Exercise</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#1B3A5C;--blue:#2E75B6;--purple:#5C3A7A;--teal:#0D6E6E;
+  --text:#1A1A1A;--text2:#595959;--border:#CCCCCC;
+  --bg:#F8F9FA;--bg2:#F2F2F2;
+  --rf:#F4CCCC;--rt:#A61C00;
+  --of:#FCE4D6;--ot:#C55A11;
+  --af:#FFF3CD;--at:#9C6500;
+  --gf:#D9EAD3;--gt:#1E6B3C;
+  --bf:#D6E4F0;--bt:#1B3A5C;
+  --pf:#EDE4F5;--pt:#5C3A7A;
+}
+body{font-family:Arial,Helvetica,sans-serif;font-size:14px;color:var(--text);background:#fff}
+
+/* ── HEADER ── */
+.pg-hdr{background:var(--navy);display:flex;flex-direction:column}
+.hdr-top{display:flex;justify-content:space-between;align-items:center;padding:14px 24px 0}
+.hdr-org{font-size:11px;font-weight:700;color:rgba(255,255,255,.65);letter-spacing:.1em;text-transform:uppercase}
+.hdr-ref{font-size:11px;color:rgba(255,255,255,.4);letter-spacing:.04em}
+.hdr-main{padding:12px 24px 0}
+.hdr-title{font-size:26px;font-weight:700;color:#fff;letter-spacing:-.3px}
+.hdr-sub{font-size:13px;color:rgba(255,255,255,.65);margin-top:4px}
+
+/* ── PURE-CSS TABS ── */
+.tab-radios{display:none}
+.tab-bar{display:flex;padding:0 24px;gap:0;overflow-x:auto;margin-top:12px}
+.tab{padding:12px 20px;font-size:13px;font-weight:700;cursor:pointer;color:rgba(255,255,255,.5);border-bottom:3px solid transparent;white-space:nowrap;font-family:Arial,Helvetica,sans-serif;transition:color .15s,border-color .15s;user-select:none}
+.tab:hover{color:rgba(255,255,255,.85)}
+.panel{display:none;padding:24px}
+
+#t1:checked ~ .pg-hdr .tab[for="t1"],
+#t2:checked ~ .pg-hdr .tab[for="t2"],
+#t3:checked ~ .pg-hdr .tab[for="t3"],
+#t4:checked ~ .pg-hdr .tab[for="t4"],
+#t5:checked ~ .pg-hdr .tab[for="t5"],
+#t6:checked ~ .pg-hdr .tab[for="t6"],
+#t7:checked ~ .pg-hdr .tab[for="t7"]
+{color:#fff;border-bottom-color:rgba(255,255,255,.9)}
+
+#t1:checked ~ #p1,
+#t2:checked ~ #p2,
+#t3:checked ~ #p3,
+#t4:checked ~ #p4,
+#t5:checked ~ #p5,
+#t6:checked ~ #p6,
+#t7:checked ~ #p7
+{display:block}
+
+/* ── METRIC CARDS ── */
+.mrow{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:20px}
+.mc{background:var(--bg);border:.5px solid var(--border);border-radius:6px;padding:14px 16px}
+.ml{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text2);margin-bottom:4px}
+.mv{font-size:24px;font-weight:700}
+.ms{font-size:11px;color:var(--text2);margin-top:3px}
+
+/* ── SECTION TITLE ── */
+.st{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--navy);margin-bottom:10px}
+
+/* ── BADGES ── */
+.badge{display:inline-block;font-size:11px;font-weight:700;padding:3px 9px;border-radius:3px;white-space:nowrap}
+.bc{background:var(--rf);color:var(--rt)}
+.bh{background:var(--of);color:var(--ot)}
+.bm{background:var(--af);color:var(--at)}
+.bg{background:var(--gf);color:var(--gt)}
+.bp{background:var(--bf);color:var(--bt)}
+.bpu{background:var(--pf);color:var(--pt)}
+
+/* ── TABLES ── */
+.tw{overflow-x:auto;border:.5px solid var(--border);border-radius:6px;margin-bottom:16px}
+.tw.sh{max-height:460px;overflow-y:auto}
+.dt{width:100%;border-collapse:collapse;font-size:12px}
+.dt th{background:var(--navy);color:#fff;padding:9px 10px;font-weight:700;font-size:11px;text-align:left;position:sticky;top:0;z-index:2;white-space:nowrap;letter-spacing:.05em;text-transform:uppercase}
+.dt td{padding:8px 10px;border-bottom:.5px solid var(--border);vertical-align:top}
+.dt tr:last-child td{border-bottom:none}
+.dt tr:hover td{background:var(--bg2)}
+.dt td.ctr{text-align:center;vertical-align:middle}
+.dt td.num{text-align:right;font-variant-numeric:tabular-nums;vertical-align:middle}
+.dt td.mid{vertical-align:middle}
+
+/* ── LAYOUT ── */
+.cg{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.cg3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px}
+.cb{background:var(--bg);border:.5px solid var(--border);border-radius:6px;padding:14px;margin-bottom:16px}
+.cb0{background:var(--bg);border:.5px solid var(--border);border-radius:6px;padding:14px;margin-bottom:0}
+
+/* ── CARDS ── */
+.card{background:#fff;border:.5px solid var(--border);border-left:4px solid;border-radius:6px;padding:12px 14px;margin-bottom:10px}
+.card:last-child{margin-bottom:0}
+.card-hdr{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px}
+.card-title{font-size:13px;font-weight:700;flex:1}
+.card-sub{font-size:12px;color:var(--text2);line-height:1.55}
+
+/* ── PROGRESS BARS ── */
+.cbar-wrap{margin-bottom:9px}
+.cbar-wrap:last-child{margin-bottom:0}
+.cbar-label{display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px}
+.cbar{height:12px;background:var(--bg2);border-radius:3px;overflow:hidden}
+.cbar-fill{height:100%;border-radius:3px}
+
+/* ── STAT ROWS ── */
+.stat-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:.5px solid var(--border);font-size:12px}
+.stat-row:last-child{border-bottom:none}
+.stat-label{color:var(--text2);flex:1;padding-right:8px}
+.stat-val{font-weight:700;text-align:right;flex-shrink:0}
+
+/* ── NOTICES ── */
+.notice{border:.5px solid;border-radius:6px;padding:11px 13px;margin-bottom:10px;font-size:12px;line-height:1.6}
+.notice:last-child{margin-bottom:0}
+.notice-r{background:var(--rf);border-color:#E24B4A;color:var(--rt)}
+.notice-a{background:var(--of);border-color:#EF9F27;color:var(--ot)}
+.notice-g{background:var(--gf);border-color:#4CAF50;color:var(--gt)}
+.notice-b{background:var(--bf);border-color:var(--blue);color:var(--bt)}
+.notice-p{background:var(--pf);border-color:var(--purple);color:var(--pt)}
+
+/* ── RAG DOTS ── */
+.rag{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:middle;flex-shrink:0}
+.rag-r{background:#E24B4A}
+.rag-a{background:#EF9F27}
+.rag-g{background:#4CAF50}
+.rag-b{background:#2E75B6}
+.rag-p{background:#5C3A7A}
+
+/* ── VALUE COLOURS ── */
+.v-g{color:var(--gt);font-weight:700}
+.v-a{color:var(--at);font-weight:700}
+.v-r{color:var(--rt);font-weight:700}
+.v-b{color:var(--bt);font-weight:700}
+
+/* ── FUNNEL ── */
+.funnel{display:flex;flex-direction:column;gap:6px}
+.funnel-tier{border-radius:4px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between}
+.funnel-label{font-size:12px;font-weight:700}
+.funnel-count{font-size:20px;font-weight:700}
+.funnel-sub{font-size:11px;opacity:.8}
+.ft-1{background:var(--rf);color:var(--rt)}
+.ft-2{background:var(--of);color:var(--ot)}
+.ft-3{background:var(--af);color:var(--at)}
+.ft-4{background:var(--gf);color:var(--gt)}
+.ft-5{background:var(--bf);color:var(--bt)}
+
+/* ── OWNER BLOCK ── */
+.owner-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.owner-card{background:#fff;border:.5px solid var(--border);border-radius:6px;border-top:3px solid;padding:11px 13px}
+.owner-tier{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text2);margin-bottom:4px}
+.owner-name{font-size:13px;font-weight:700;margin-bottom:2px}
+.owner-role{font-size:11px;color:var(--text2);margin-bottom:6px}
+
+/* ── TIMELINE ── */
+.tl{position:relative;padding-left:22px}
+.tl::before{content:'';position:absolute;left:4px;top:6px;bottom:6px;width:2px;background:var(--border)}
+.tl-item{position:relative;margin-bottom:14px;padding-bottom:14px;border-bottom:.5px solid var(--border)}
+.tl-item:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.tl-dot{position:absolute;left:-18px;top:3px;width:12px;height:12px;border-radius:50%;border:2px solid #fff}
+.tl-time{font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px}
+.tl-actor{font-size:11px;color:var(--blue);font-weight:700;margin-bottom:2px}
+.tl-title{font-size:12px;font-weight:700;margin-bottom:2px}
+.tl-desc{font-size:12px;color:var(--text2);line-height:1.5}
+
+/* ── ESCALATION STATUS STRIP (base) ── */
+.esc-strip{background:#fff;border:.5px solid var(--border);border-radius:6px;overflow:hidden}
+.esc-hdr{display:grid;background:var(--navy);padding:8px 10px;gap:0}
+.esc-hdr span{font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.05em}
+.esc-row{display:grid;padding:8px 10px;border-bottom:.5px solid var(--border);font-size:12px;align-items:start;gap:0}
+.esc-row:last-child{border-bottom:none}
+.esc-row:hover{background:var(--bg2)}
+.esc-ref{font-weight:700;color:var(--navy)}
+.esc-age{color:var(--text2);font-size:11px}
+.esc-desc{line-height:1.5;padding:0 8px}
+.esc-owner{font-weight:700;font-size:11px;padding-right:6px}
+.esc-stat{text-align:center}
+.esc-due{text-align:right;font-size:11px;color:var(--text2);padding-right:6px}
+.esc-pri{text-align:right}
+
+/* ── BREACH PILLS ── */
+.breach-pill{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;white-space:nowrap}
+.breach-r{background:var(--rt);color:#fff}
+.breach-a{background:var(--ot);color:#fff}
+.breach-g{background:var(--gt);color:#fff}
+.breach-b{background:var(--blue);color:#fff}
+
+/* ── ACTION ROW ── */
+.act-row{display:flex;gap:10px;padding:9px 0;border-bottom:.5px solid var(--border);font-size:12px;align-items:flex-start}
+.act-row:last-child{border-bottom:none}
+.act-ref{min-width:72px;font-weight:700;flex-shrink:0;color:var(--navy)}
+.act-body{flex:1}
+.act-title{font-weight:700;margin-bottom:2px}
+.act-desc{color:var(--text2);line-height:1.5}
+.act-meta{display:flex;gap:8px;margin-top:4px;flex-wrap:wrap}
+
+/* ── RACI TABLE ── */
+.raci-g{background:var(--gf);color:var(--gt);font-weight:700;text-align:center;padding:6px;border:.5px solid var(--border);font-size:11px}
+.raci-b{background:var(--bf);color:var(--bt);font-weight:700;text-align:center;padding:6px;border:.5px solid var(--border);font-size:11px}
+.raci-a{background:var(--af);color:var(--at);font-weight:700;text-align:center;padding:6px;border:.5px solid var(--border);font-size:11px}
+.raci-n{background:var(--bg2);color:var(--text2);text-align:center;padding:6px;border:.5px solid var(--border);font-size:11px}
+.raci-hdr{background:var(--navy);color:#fff;font-size:11px;font-weight:700;text-align:center;padding:8px 6px;border:.5px solid var(--border);letter-spacing:.04em;white-space:nowrap}
+.raci-lbl{background:var(--bg);font-size:12px;font-weight:700;padding:8px 10px;border:.5px solid var(--border);vertical-align:middle}
+.raci-table{width:100%;border-collapse:collapse}
+
+p.intro{font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.6}
+
+/* ── SERVICE COST STRIP (7-col) ── */
+.svc-cols{grid-template-columns:160px 1fr 100px 100px 80px 90px 90px}
+
+/* ── SUBSCRIPTION STRIP (6-col) ── */
+.sub-cols{grid-template-columns:130px 1fr 100px 90px 90px 90px}
+
+/* ── ANOMALY STRIP (7-col) ── */
+.ano-cols{grid-template-columns:100px 130px 1fr 90px 90px 80px 90px}
+
+/* ── BUDGET STRIP (7-col) ── */
+.bgt-cols{grid-template-columns:160px 1fr 100px 100px 80px 90px 90px}
+
+/* ── CHARGEBACK STRIP (6-col) ── */
+.chg-cols{grid-template-columns:150px 1fr 100px 90px 90px 90px}
+
+/* ── SHARED STRIP CELLS ── */
+.s-name{font-weight:700}
+.s-sub{font-size:11px;color:var(--text2)}
+.s-num{text-align:right;font-variant-numeric:tabular-nums;padding-right:6px}
+.s-ctr{text-align:center}
+
+/* ── PORTFOLIO DISCLAIMER ── */
+.portfolio-disclaimer{
+  position:sticky;top:0;z-index:9999;width:100%;
+  background:#7A1F1F;color:#ffffff;
+  font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:1.5;
+  padding:10px 16px;box-sizing:border-box;text-align:center;
+  border-bottom:3px solid #4a1212;
+}
+.portfolio-disclaimer strong{font-weight:700}
+.portfolio-disclaimer a{color:#ffffff;text-decoration:underline;font-weight:700}
+@media (max-width:640px){.portfolio-disclaimer{font-size:12px;padding:10px 12px}}
+.portfolio-about{max-width:1100px;margin:32px auto 40px;padding:20px 24px;border:1px solid var(--border);border-left:4px solid #7A1F1F;background:var(--bg);font-size:13px;line-height:1.6;color:var(--text2);scroll-margin-top:90px}
+.portfolio-about h2{font-size:15px;color:var(--navy);margin-bottom:8px}
+.portfolio-about p+p{margin-top:8px}
+.pd-short{display:none}
+.cg>*,.cg3>*,.mrow>*{min-width:0}
+
+/* ── RESPONSIVE ── */
+@media (max-width:900px){
+  .cg3{grid-template-columns:1fr 1fr}
+}
+@media (max-width:760px){
+  .pd-full{display:none}.pd-short{display:inline}
+  .cg,.cg3,.owner-grid{grid-template-columns:1fr}
+  .panel{padding:16px}
+  .hdr-top{flex-wrap:wrap;gap:4px;padding:12px 16px 0}
+  .hdr-main{padding:10px 16px 0}.hdr-title{font-size:21px}
+  .tab-bar{padding:0 8px}.tab{padding:12px 14px}
+  .cb0,.cb,.esc-strip,.tw{overflow-x:auto}
+  .svc-cols,.sub-cols,.ano-cols,.bgt-cols,.chg-cols,.raci-table{min-width:760px}
+  .dt{min-width:440px}
+  .stat-row{gap:10px}.stat-val{text-align:right}
+  .cbar-label{gap:10px}
+  .act-row{flex-wrap:wrap}
+  .portfolio-about{margin:24px 16px 32px;padding:16px}
+}
+</style>
+</head>
+<body>
+
+<div class="portfolio-disclaimer">
+  &#9888; <strong>Fictional company &amp; data &mdash; independent portfolio exercise by Divan Gerber.</strong>
+  <span class="pd-short">Not a role held or real employer information. All figures simulated; real product names used illustratively.</span>
+  <span class="pd-full">All organizations, figures, and scenarios on this site are simulated for demonstration purposes.
+  Not a role held or real employer information. This page names real products and frameworks (including Microsoft Azure and its Synapse, Data Factory, OpenAI, Backup, Advisor, Cost Management and Defender services, Power BI, Azure DevOps, Databricks, and the FinOps Foundation framework) within an entirely fictional cloud environment. Every cost, budget, forecast, idle resource, anomaly, saving and control result shown is invented for this exercise and does not describe any real tenant, bill, contract or event. The committees, decisions and roles shown are simulated scenario content, not decisions that happened. This is a static design prototype, not a live cloud-billing feed, and no real cloud savings are claimed.</span>
+  <a href="#about-this-portfolio">Read more</a>
+</div>
+
+<input class="tab-radios" type="radio" name="tabs" id="t1" checked>
+<input class="tab-radios" type="radio" name="tabs" id="t2">
+<input class="tab-radios" type="radio" name="tabs" id="t3">
+<input class="tab-radios" type="radio" name="tabs" id="t4">
+<input class="tab-radios" type="radio" name="tabs" id="t5">
+<input class="tab-radios" type="radio" name="tabs" id="t6">
+<input class="tab-radios" type="radio" name="tabs" id="t7">
+
+<div class="pg-hdr">
+  <div class="hdr-top">
+    <div class="hdr-org">MedRetail Group South Africa (Fictional)</div>
+    <div class="hdr-ref">Independent Portfolio Exercise &nbsp;|&nbsp; Simulated period: June 2026</div>
+  </div>
+  <div class="hdr-main">
+    <div class="hdr-title">Cloud Financial Governance Dashboard</div>
+    <div class="hdr-sub">R6.11M cloud spend YTD &bull; R0.23M over budget &bull; R2.5M savings identified &bull; 11 idle resources &bull; 78% PAYG &bull; RI conversion pending &bull; Simulated snapshot: 22 Jun 2026 (static data, not a live feed)</div>
+  </div>
+  <div class="tab-bar">
+    <label class="tab" for="t1">FinOps Overview</label>
+    <label class="tab" for="t2">Spend by Service</label>
+    <label class="tab" for="t3">Budget &amp; Forecasting</label>
+    <label class="tab" for="t4">Anomalies &amp; Waste</label>
+    <label class="tab" for="t5">Optimisation Opportunities</label>
+    <label class="tab" for="t6">Chargeback &amp; Allocation</label>
+    <label class="tab" for="t7">Governance &amp; Controls</label>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════
+     PANEL 1 — FINOPS OVERVIEW
+═════════════════════════════════════════ -->
+<div class="panel" id="p1">
+
+  <div class="notice notice-a">
+    <strong>Cloud spend trending 14% above monthly budget &mdash; R140k overspend in June alone.</strong> Primary drivers: Databricks idle cluster consumption (+R54k MTD), Synapse SQL pool running 24/7 without auto-pause (+R53k MTD), and Azure VM over-provisioning (+R34k MTD). FinOps review scheduled 15 Jul. Two quick-fix actions (Databricks auto-termination and Synapse auto-pause) can recover R1.12M p.a. within about 30 days.
+  </div>
+  <div class="notice notice-b" style="margin-top:10px">
+    <strong>Reserved instance conversion opportunity: R840k p.a. saving.</strong> Currently 78% of Azure compute runs on pay-as-you-go. Converting predictable workloads (Synapse, core VMs, Data Factory) to 1-year reserved instances is modelled to cut spend on those workloads by about 12% (R70k of R580k a month). Upfront commitment R1.2M (a prepayment that offsets pay-as-you-go charges); the month-4 break-even is a simulated assumption. CFO to approve, with the CDO presenting, at the 16 Jul TIC.
+  </div>
+
+  <div class="mrow" style="margin-top:16px">
+    <div class="mc"><div class="ml">Cloud Spend YTD</div><div class="mv v-a">R6.11M</div><div class="ms">vs R5.88M budget</div></div>
+    <div class="mc"><div class="ml">YTD Overspend</div><div class="mv v-r">R0.23M</div><div class="ms">+3.9% over plan</div></div>
+    <div class="mc"><div class="ml">Jun Monthly Spend</div><div class="mv v-a">R1.12M</div><div class="ms">vs R980k budget</div></div>
+    <div class="mc"><div class="ml">Jun Overspend</div><div class="mv v-r">R140k</div><div class="ms">+14.3% over plan</div></div>
+    <div class="mc"><div class="ml">Savings Identified (p.a.)</div><div class="mv v-g">R2.5M</div><div class="ms">7 opportunities</div></div>
+    <div class="mc"><div class="ml">RI Coverage</div><div class="mv v-a">22%</div><div class="ms">Target: &ge;65%</div></div>
+    <div class="mc"><div class="ml">Idle Resources</div><div class="mv v-r">11</div><div class="ms">Clusters &bull; VMs &bull; DBs &bull; disks</div></div>
+    <div class="mc"><div class="ml">FY2026 Forecast (no action)</div><div class="mv v-a">R12.83M</div><div class="ms">vs R11.76M budget</div></div>
+  </div>
+
+  <div class="cg">
+    <div>
+      <div class="cb">
+        <div class="st">Cloud spend by service &mdash; June 2026 (R thousand)</div>
+        <div class="cbar-wrap">
+          <div class="cbar-label"><span>Azure Synapse SQL Pool</span><span class="v-r">R341k (+R53k vs budget)</span></div>
+          <div class="cbar"><div class="cbar-fill" style="width:100%;background:var(--rt)"></div></div>
+        </div>
+        <div class="cbar-wrap">
+          <div class="cbar-label"><span>Databricks (DBU)</span><span class="v-r">R248k (+R54k vs budget)</span></div>
+          <div class="cbar"><div class="cbar-fill" style="width:73%;background:var(--rt)"></div></div>
+        </div>
+        <div class="cbar-wrap">
+          <div class="cbar-label"><span>Azure Virtual Machines</span><span class="v-a">R182k (+R34k vs budget)</span></div>
+          <div class="cbar"><div class="cbar-fill" style="width:53%;background:var(--ot)"></div></div>
+        </div>
+        <div class="cbar-wrap">
+          <div class="cbar-label"><span>Azure Networking / Egress</span><span class="v-a">R88k (+R4k vs budget)</span></div>
+          <div class="cbar"><div class="cbar-fill" style="width:26%;background:var(--at)"></div></div>
+        </div>
+        <div class="cbar-wrap">
+          <div class="cbar-label"><span>Azure Backup &amp; Recovery</span><span class="v-a">R52k (+R4k vs budget)</span></div>
+          <div class="cbar"><div class="cbar-fill" style="width:15%;background:var(--at)"></div></div>
+        </div>
+        <div class="cbar-wrap">
+          <div class="cbar-label"><span>Azure Data Factory (ADF)</span><span class="v-g">R76k (-R8k vs budget)</span></div>
+          <div class="cbar"><div class="cbar-fill" style="width:22%;background:var(--gt)"></div></div>
+        </div>
+        <div class="cbar-wrap">
+          <div class="cbar-label"><span>Azure Data Lake Gen2</span><span class="v-g">R58k (-R4k vs budget)</span></div>
+          <div class="cbar"><div class="cbar-fill" style="width:17%;background:var(--gt)"></div></div>
+        </div>
+        <div class="cbar-wrap">
+          <div class="cbar-label"><span>Azure OpenAI / Cognitive</span><span>R75k (+R3k vs budget)</span></div>
+          <div class="cbar"><div class="cbar-fill" style="width:22%;background:var(--blue)"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <div class="cb">
+        <div class="st">Savings pipeline &mdash; by category and status</div>
+        <div class="funnel">
+          <div class="funnel-tier ft-1">
+            <div><div class="funnel-label">Quick wins &mdash; implement in 30 days</div><div class="funnel-sub">Databricks auto-termination &bull; Backup retention</div></div>
+            <div><div style="font-size:14px;font-weight:700">R0.71M</div><div style="font-size:11px;opacity:.8">2 items</div></div>
+          </div>
+          <div class="funnel-tier ft-2">
+            <div><div class="funnel-label">Active &mdash; implementation in progress</div><div class="funnel-sub">Synapse auto-pause &bull; VM right-sizing &bull; ADF</div></div>
+            <div><div style="font-size:14px;font-weight:700">R0.92M</div><div style="font-size:11px;opacity:.8">3 items</div></div>
+          </div>
+          <div class="funnel-tier ft-3">
+            <div><div class="funnel-label">Pipeline &mdash; awaiting approval</div><div class="funnel-sub">Reserved instances &bull; Storage tiering</div></div>
+            <div><div style="font-size:14px;font-weight:700">R0.87M</div><div style="font-size:11px;opacity:.8">2 items</div></div>
+          </div>
+          <div class="funnel-tier ft-4">
+            <div><div class="funnel-label">Realised YTD &mdash; simulated, finance validated</div><div class="funnel-sub">Storage tiering &bull; Dev VM shutdown &bull; ADF cadence</div></div>
+            <div><div style="font-size:14px;font-weight:700">R0.31M</div><div style="font-size:11px;opacity:.8">3 items</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cb0">
+        <div class="st">Monthly cloud spend trend &mdash; Jan to Jun 2026 (Rk)</div>
+        <div class="tw" style="margin-bottom:0">
+          <table class="dt">
+            <thead>
+              <tr>
+                <th>Month</th>
+                <th class="num">Budget (Rk)</th>
+                <th class="num">Actual (Rk)</th>
+                <th class="num">Variance</th>
+                <th class="ctr">vs Prior Mo</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td class="mid">Jan 2026</td><td class="num">980</td><td class="num v-g">880</td><td class="num v-g">-100k</td><td class="ctr"><span class="badge bg">Under</span></td></tr>
+              <tr><td class="mid">Feb 2026</td><td class="num">980</td><td class="num v-g">950</td><td class="num v-g">-30k</td><td class="ctr"><span class="badge bg">Under</span></td></tr>
+              <tr><td class="mid">Mar 2026</td><td class="num">980</td><td class="num v-a">1 000</td><td class="num v-r">+20k</td><td class="ctr"><span class="badge bh">Over</span></td></tr>
+              <tr><td class="mid">Apr 2026</td><td class="num">980</td><td class="num v-a">1 070</td><td class="num v-r">+90k</td><td class="ctr"><span class="badge bh">Over</span></td></tr>
+              <tr><td class="mid">May 2026</td><td class="num">980</td><td class="num v-r">1 090</td><td class="num v-r">+110k</td><td class="ctr"><span class="badge bc">Surge</span></td></tr>
+              <tr><td class="mid"><strong>Jun 2026</strong></td><td class="num"><strong>980</strong></td><td class="num v-r"><strong>1 120</strong></td><td class="num v-r"><strong>+140k</strong></td><td class="ctr"><span class="badge bc">Surge</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FinOps governance -->
+  <div class="cb0">
+    <div class="st">FinOps governance &mdash; accountability and cadence</div>
+    <div class="owner-grid">
+      <div class="owner-card" style="border-top-color:var(--navy)">
+        <div class="owner-tier">FinOps Programme Owner</div>
+        <div class="owner-name">CDO</div>
+        <div class="owner-role">Chief Data Officer (simulated) &mdash; cloud financial oversight</div>
+        <div class="stat-row" style="padding:4px 0"><span class="stat-label" style="font-size:11px">Monthly cloud review</span><span class="stat-val" style="font-size:11px">15th of each month</span></div>
+        <div class="stat-row" style="padding:4px 0;border-bottom:none"><span class="stat-label" style="font-size:11px">Open savings target</span><span class="stat-val" style="font-size:11px">R2.5M p.a.</span></div>
+      </div>
+      <div class="owner-card" style="border-top-color:var(--teal)">
+        <div class="owner-tier">Finance Accountability</div>
+        <div class="owner-name">CFO</div>
+        <div class="owner-role">Chief Financial Officer (simulated) &mdash; budget and variance approval</div>
+        <div class="stat-row" style="padding:4px 0"><span class="stat-label" style="font-size:11px">Budget review</span><span class="stat-val" style="font-size:11px">Monthly (TIC)</span></div>
+        <div class="stat-row" style="padding:4px 0;border-bottom:none"><span class="stat-label" style="font-size:11px">RI approval required</span><span class="stat-val" style="font-size:11px">16 Jul TIC</span></div>
+      </div>
+      <div class="owner-card" style="border-top-color:var(--blue)">
+        <div class="owner-tier">Platform Engineering</div>
+        <div class="owner-name">Analytics Platform Lead</div>
+        <div class="owner-role">Azure FinOps implementation</div>
+        <div class="stat-row" style="padding:4px 0"><span class="stat-label" style="font-size:11px">Quick wins due</span><span class="stat-val" style="font-size:11px">30 Jun &amp; 15 Jul</span></div>
+        <div class="stat-row" style="padding:4px 0;border-bottom:none"><span class="stat-label" style="font-size:11px">RI conversion lead</span><span class="stat-val" style="font-size:11px">If approved</span></div>
+      </div>
+      <div class="owner-card" style="border-top-color:var(--purple)">
+        <div class="owner-tier">Technology Sign-off</div>
+        <div class="owner-name">CTO</div>
+        <div class="owner-role">GPU &amp; infrastructure decisions</div>
+        <div class="stat-row" style="padding:4px 0"><span class="stat-label" style="font-size:11px">GPU decision</span><span class="stat-val" style="font-size:11px">Due 30 Jun</span></div>
+        <div class="stat-row" style="padding:4px 0;border-bottom:none"><span class="stat-label" style="font-size:11px">VM right-sizing sign-off</span><span class="stat-val" style="font-size:11px">15 Jul</span></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- ════════════════════════════════════════
+     PANEL 2 — SPEND BY SERVICE
+═════════════════════════════════════════ -->
+<div class="panel" id="p2">
+
+  <p class="intro">Cloud spend is tracked at the Azure service level using Azure Cost Management + Billing, with cost data exported daily to the data lake and surfaced in Power BI. All spend is tagged by workload, environment (production / dev / test), and business unit to enable chargeback allocation. Untagged resources are flagged as governance violations and reported to the Platform Lead weekly.</p>
+
+  <div class="mrow">
+    <div class="mc"><div class="ml">Total Cloud Spend (Jun)</div><div class="mv v-a">R1.12M</div><div class="ms">Azure + Databricks</div></div>
+    <div class="mc"><div class="ml">Azure Core (IaaS/PaaS)</div><div class="mv">R872k</div><div class="ms">78% of total</div></div>
+    <div class="mc"><div class="ml">Databricks (DBU)</div><div class="mv v-r">R248k</div><div class="ms">22% of total</div></div>
+    <div class="mc"><div class="ml">Resources Untagged</div><div class="mv v-a">18</div><div class="ms">Governance violation</div></div>
+    <div class="mc"><div class="ml">Tagging Compliance</div><div class="mv v-a">88%</div><div class="ms">Target: &ge;98%</div></div>
+    <div class="mc"><div class="ml">Subscriptions Monitored</div><div class="mv">4</div><div class="ms">Prod &bull; DevTest &bull; DR &bull; Shared</div></div>
+  </div>
+
+  <!-- Service cost strip -->
+  <div class="esc-strip" style="margin-bottom:16px">
+    <div class="esc-hdr svc-cols">
+      <span>Azure Service</span>
+      <span>Workload / Purpose</span>
+      <span class="s-num">Budget Jun (Rk)</span>
+      <span class="s-num">Actual Jun (Rk)</span>
+      <span class="s-ctr">Variance</span>
+      <span class="s-ctr">YTD Spend</span>
+      <span class="s-ctr">Status</span>
+    </div>
+    <div class="esc-row svc-cols">
+      <div class="s-name">Synapse Analytics</div><div class="s-sub">SQL pool &mdash; data warehouse</div>
+      <div class="s-num">288</div><div class="s-num v-r">341</div>
+      <div class="s-ctr"><span class="badge bc">+53k</span></div>
+      <div class="s-ctr v-r">R1.767M</div>
+      <div class="s-ctr"><span class="badge bc">Over</span></div>
+    </div>
+    <div class="esc-row svc-cols">
+      <div class="s-name">Databricks</div><div class="s-sub">ML training, analytics, AI features</div>
+      <div class="s-num">194</div><div class="s-num v-r">248</div>
+      <div class="s-ctr"><span class="badge bc">+54k</span></div>
+      <div class="s-ctr v-r">R1.34M</div>
+      <div class="s-ctr"><span class="badge bc">Over</span></div>
+    </div>
+    <div class="esc-row svc-cols">
+      <div class="s-name">Azure Virtual Machines</div><div class="s-sub">Dev, test &amp; integration servers</div>
+      <div class="s-num">148</div><div class="s-num v-a">182</div>
+      <div class="s-ctr"><span class="badge bh">+34k</span></div>
+      <div class="s-ctr v-a">R1.02M</div>
+      <div class="s-ctr"><span class="badge bh">Over</span></div>
+    </div>
+    <div class="esc-row svc-cols">
+      <div class="s-name">Azure Networking</div><div class="s-sub">ExpressRoute, egress, peering</div>
+      <div class="s-num">84</div><div class="s-num v-a">88</div>
+      <div class="s-ctr"><span class="badge bm">+4k</span></div>
+      <div class="s-ctr">R494k</div>
+      <div class="s-ctr"><span class="badge bm">Watch</span></div>
+    </div>
+    <div class="esc-row svc-cols">
+      <div class="s-name">Azure OpenAI / Cognitive</div><div class="s-sub">AI API consumption &mdash; 3 prod models</div>
+      <div class="s-num">72</div><div class="s-num">75</div>
+      <div class="s-ctr"><span class="badge bm">+3k</span></div>
+      <div class="s-ctr">R408k</div>
+      <div class="s-ctr"><span class="badge bm">Watch</span></div>
+    </div>
+    <div class="esc-row svc-cols">
+      <div class="s-name">Azure Backup &amp; Recovery</div><div class="s-sub">VM snapshots, LTR, site recovery</div>
+      <div class="s-num">48</div><div class="s-num v-a">52</div>
+      <div class="s-ctr"><span class="badge bm">+4k</span></div>
+      <div class="s-ctr">R298k</div>
+      <div class="s-ctr"><span class="badge bm">Watch</span></div>
+    </div>
+    <div class="esc-row svc-cols">
+      <div class="s-name">Azure Data Factory</div><div class="s-sub">Pipeline orchestration &amp; ETL</div>
+      <div class="s-num">84</div><div class="s-num v-g">76</div>
+      <div class="s-ctr"><span class="badge bg">-8k</span></div>
+      <div class="s-ctr v-g">R442k</div>
+      <div class="s-ctr"><span class="badge bg">Under</span></div>
+    </div>
+    <div class="esc-row svc-cols">
+      <div class="s-name">Azure Data Lake Gen2</div><div class="s-sub">Raw &amp; curated data storage (18.4 TB)</div>
+      <div class="s-num">62</div><div class="s-num v-g">58</div>
+      <div class="s-ctr"><span class="badge bg">-4k</span></div>
+      <div class="s-ctr v-g">R341k</div>
+      <div class="s-ctr"><span class="badge bg">Under</span></div>
+    </div>
+    <div class="esc-row svc-cols">
+      <div class="s-name">Azure Security Centre</div><div class="s-sub">Defender for Cloud, SIEM</div>
+      <div class="s-num">0</div><div class="s-num v-g">0</div>
+      <div class="s-ctr"><span class="badge bg">On plan</span></div>
+      <div class="s-ctr v-g">R0</div>
+      <div class="s-ctr"><span class="badge bg">Included</span></div>
+    </div>
+  </div>
+
+  <!-- Subscription breakdown -->
+  <div class="cg">
+    <div class="cb0">
+      <div class="st">Spend by Azure subscription &mdash; June 2026</div>
+      <div class="esc-strip">
+        <div class="esc-hdr sub-cols">
+          <span>Subscription</span>
+          <span>Primary Purpose</span>
+          <span class="s-num">Budget (Rk)</span>
+          <span class="s-num">Actual (Rk)</span>
+          <span class="s-ctr">%&nbsp;Total</span>
+          <span class="s-ctr">Status</span>
+        </div>
+        <div class="esc-row sub-cols">
+          <div class="s-name">MGSA-Prod-01</div><div class="s-sub">Production analytics &amp; AI</div>
+          <div class="s-num">680</div><div class="s-num v-r">782</div>
+          <div class="s-ctr">70%</div>
+          <div class="s-ctr"><span class="badge bc">Over</span></div>
+        </div>
+        <div class="esc-row sub-cols">
+          <div class="s-name">MGSA-DevTest-01</div><div class="s-sub">Dev &amp; test environments</div>
+          <div class="s-num">180</div><div class="s-num v-a">214</div>
+          <div class="s-ctr">19%</div>
+          <div class="s-ctr"><span class="badge bh">Over</span></div>
+        </div>
+        <div class="esc-row sub-cols">
+          <div class="s-name">MGSA-DR-01</div><div class="s-sub">Disaster recovery &amp; backup</div>
+          <div class="s-num">80</div><div class="s-num v-g">78</div>
+          <div class="s-ctr">7%</div>
+          <div class="s-ctr"><span class="badge bg">Under</span></div>
+        </div>
+        <div class="esc-row sub-cols">
+          <div class="s-name">MGSA-Shared-01</div><div class="s-sub">Shared services &amp; networking</div>
+          <div class="s-num">40</div><div class="s-num">46</div>
+          <div class="s-ctr">4%</div>
+          <div class="s-ctr"><span class="badge bm">Watch</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cb0">
+      <div class="st">Spend by environment &amp; tagging compliance</div>
+      <div class="cbar-wrap">
+        <div class="cbar-label"><span>Production (tagged 94%)</span><span style="font-weight:700">R782k (70%)</span></div>
+        <div class="cbar"><div class="cbar-fill" style="width:100%;background:var(--navy)"></div></div>
+      </div>
+      <div class="cbar-wrap">
+        <div class="cbar-label"><span>Development (tagged 82%)</span><span style="font-weight:700">R214k (19%)</span></div>
+        <div class="cbar"><div class="cbar-fill" style="width:27%;background:var(--blue)"></div></div>
+      </div>
+      <div class="cbar-wrap">
+        <div class="cbar-label"><span>DR / Backup (tagged 98%)</span><span style="font-weight:700">R78k (7%)</span></div>
+        <div class="cbar"><div class="cbar-fill" style="width:10%;background:var(--gt)"></div></div>
+      </div>
+      <div class="cbar-wrap">
+        <div class="cbar-label"><span>Shared / Unallocated (tagged 61%)</span><span class="v-r">R46k (4%)</span></div>
+        <div class="cbar"><div class="cbar-fill" style="width:6%;background:var(--rt)"></div></div>
+      </div>
+      <div style="height:12px"></div>
+      <div class="st">Tagging compliance &mdash; required tags</div>
+      <div class="stat-row"><span class="stat-label">Environment (prod/dev/test/dr)</span><span class="stat-val v-g">96% compliant</span></div>
+      <div class="stat-row"><span class="stat-label">Workload (application name)</span><span class="stat-val v-a">88% compliant</span></div>
+      <div class="stat-row"><span class="stat-label">Cost-Centre (BU allocation)</span><span class="stat-val v-a">84% compliant</span></div>
+      <div class="stat-row"><span class="stat-label">Owner (team or individual)</span><span class="stat-val v-r">79% compliant</span></div>
+      <div class="stat-row"><span class="stat-label">Untagged resources (count)</span><span class="stat-val v-r">18 resources</span></div>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- ════════════════════════════════════════
+     PANEL 3 — BUDGET & FORECASTING
+═════════════════════════════════════════ -->
+<div class="panel" id="p3">
+
+  <p class="intro">Cloud budget governance operates on a monthly budget cycle, with a full-year budget approved annually by the CFO. Budget owners (CDO for analytics / Platform Lead for infrastructure) are responsible for staying within allocation. Overspend above R50k in a single month triggers a mandatory variance explanation to the Technology Investment Committee (TIC) within 10 business days. The full-year forecast is updated monthly using the Azure Cost Management forecast API.</p>
+
+  <div class="mrow">
+    <div class="mc"><div class="ml">FY2026 Cloud Budget</div><div class="mv">R11.76M</div><div class="ms">Approved (simulated)</div></div>
+    <div class="mc"><div class="ml">Spent YTD (H1)</div><div class="mv v-a">R6.11M</div><div class="ms">52% of annual budget</div></div>
+    <div class="mc"><div class="ml">YTD Variance</div><div class="mv v-r">+R0.23M</div><div class="ms">+3.9% over H1 plan</div></div>
+    <div class="mc"><div class="ml">H2 Budget Remaining</div><div class="mv v-a">R5.65M</div><div class="ms">After YTD actuals</div></div>
+    <div class="mc"><div class="ml">Full-Year Forecast</div><div class="mv v-r">R12.83M</div><div class="ms">R1.07M over budget</div></div>
+    <div class="mc"><div class="ml">Forecast vs Budget</div><div class="mv v-r">+9.1%</div><div class="ms">If June run-rate continues</div></div>
+    <div class="mc"><div class="ml">Forecast with Savings</div><div class="mv v-a">R11.39M</div><div class="ms">If all optimisations land (D)</div></div>
+    <div class="mc"><div class="ml">H2 Savings Required</div><div class="mv v-a">R1.07M</div><div class="ms">In-year, to meet FY budget</div></div>
+  </div>
+
+  <!-- Budget strip -->
+  <div class="cb">
+    <div class="st">Monthly budget vs actuals &mdash; full-year view (Rk)</div>
+    <div class="esc-strip" style="margin-bottom:0">
+      <div class="esc-hdr bgt-cols">
+        <span>Month</span>
+        <span>Key Driver</span>
+        <span class="s-num">Budget (Rk)</span>
+        <span class="s-num">Actual / Forecast (Rk)</span>
+        <span class="s-ctr">Variance (Rk)</span>
+        <span class="s-ctr">Cumulative Spend</span>
+        <span class="s-ctr">Status</span>
+      </div>
+      <!-- Actuals -->
+      <div class="esc-row bgt-cols">
+        <div>Jan 2026</div><div class="s-sub">Normal ops</div>
+        <div class="s-num">980</div><div class="s-num v-g">880</div>
+        <div class="s-ctr"><span class="badge bg">-100</span></div><div class="s-ctr">R880k</div>
+        <div class="s-ctr"><span class="badge bg">Under</span></div>
+      </div>
+      <div class="esc-row bgt-cols">
+        <div>Feb 2026</div><div class="s-sub">Databricks growth</div>
+        <div class="s-num">980</div><div class="s-num v-g">950</div>
+        <div class="s-ctr"><span class="badge bg">-30</span></div><div class="s-ctr">R1.83M</div>
+        <div class="s-ctr"><span class="badge bg">Under</span></div>
+      </div>
+      <div class="esc-row bgt-cols">
+        <div>Mar 2026</div><div class="s-sub">Synapse query surge</div>
+        <div class="s-num">980</div><div class="s-num v-a">1 000</div>
+        <div class="s-ctr"><span class="badge bh">+20</span></div><div class="s-ctr">R2.83M</div>
+        <div class="s-ctr"><span class="badge bh">Over</span></div>
+      </div>
+      <div class="esc-row bgt-cols">
+        <div>Apr 2026</div><div class="s-sub">ML model training</div>
+        <div class="s-num">980</div><div class="s-num v-a">1 070</div>
+        <div class="s-ctr"><span class="badge bh">+90</span></div><div class="s-ctr">R3.90M</div>
+        <div class="s-ctr"><span class="badge bh">Over</span></div>
+      </div>
+      <div class="esc-row bgt-cols">
+        <div>May 2026</div><div class="s-sub">Idle clusters not terminated</div>
+        <div class="s-num">980</div><div class="s-num v-r">1 090</div>
+        <div class="s-ctr"><span class="badge bc">+110</span></div><div class="s-ctr">R4.99M</div>
+        <div class="s-ctr"><span class="badge bc">Surge</span></div>
+      </div>
+      <div class="esc-row bgt-cols">
+        <div><strong>Jun 2026</strong></div><div class="s-sub">Idle clusters + VM oversize</div>
+        <div class="s-num">980</div><div class="s-num v-r">1 120</div>
+        <div class="s-ctr"><span class="badge bc">+140</span></div><div class="s-ctr v-a">R6.11M</div>
+        <div class="s-ctr"><span class="badge bc">Surge</span></div>
+      </div>
+      <!-- Forecast -->
+      <div class="esc-row bgt-cols" style="background:var(--bg)">
+        <div>Jul 2026 (F)</div><div class="s-sub">Post quick-win savings</div>
+        <div class="s-num">980</div><div class="s-num v-a">920</div>
+        <div class="s-ctr"><span class="badge bg">-60</span></div><div class="s-ctr">R7.03M</div>
+        <div class="s-ctr"><span class="badge bm">Forecast</span></div>
+      </div>
+      <div class="esc-row bgt-cols" style="background:var(--bg)">
+        <div>Aug 2026 (F)</div><div class="s-sub">Synapse auto-pause live</div>
+        <div class="s-num">980</div><div class="s-num v-g">880</div>
+        <div class="s-ctr"><span class="badge bg">-100</span></div><div class="s-ctr">R7.91M</div>
+        <div class="s-ctr"><span class="badge bm">Forecast</span></div>
+      </div>
+      <div class="esc-row bgt-cols" style="background:var(--bg)">
+        <div>Sep 2026 (F)</div><div class="s-sub">RI conversion active</div>
+        <div class="s-num">980</div><div class="s-num v-g">840</div>
+        <div class="s-ctr"><span class="badge bg">-140</span></div><div class="s-ctr">R8.75M</div>
+        <div class="s-ctr"><span class="badge bm">Forecast</span></div>
+      </div>
+      <div class="esc-row bgt-cols" style="background:var(--bg)">
+        <div>Oct&ndash;Dec 2026 (F)</div><div class="s-sub">Optimised run-rate</div>
+        <div class="s-num">2 940</div><div class="s-num v-g">2 640</div>
+        <div class="s-ctr"><span class="badge bg">-300</span></div><div class="s-ctr v-a">R11.39M</div>
+        <div class="s-ctr"><span class="badge bm">Forecast</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cg" style="margin-bottom:0">
+    <div class="cb0">
+      <div class="st">Full-year outturn scenarios</div>
+      <div class="stat-row"><span class="stat-label">FY2026 cloud budget</span><span class="stat-val">R11.76M</span></div>
+      <div class="stat-row"><span class="stat-label">Scenario A &mdash; no action (June run-rate continues)</span><span class="stat-val v-r">R12.83M (+R1.07M)</span></div>
+      <div class="stat-row"><span class="stat-label">Scenario B &mdash; quick wins only</span><span class="stat-val v-a">R12.20M (+R0.44M)</span></div>
+      <div class="stat-row"><span class="stat-label">Scenario C &mdash; quick wins + RI conversion</span><span class="stat-val v-a">R11.90M (+R0.14M)</span></div>
+      <div class="stat-row"><span class="stat-label">Scenario D &mdash; all optimisations complete</span><span class="stat-val v-g">R11.39M (-R0.37M)</span></div>
+      <div class="notice notice-g" style="margin-top:12px">Scenario D is achievable if Databricks idle cluster fix (30 Jun), Synapse auto-pause (15 Jul), and RI conversion (approved at 16 Jul TIC, active Sep) all complete on schedule. This is the FinOps team target.</div>
+    </div>
+    <div class="cb0">
+      <div class="st">Budget allocation by workload category (FY2026)</div>
+      <div class="cbar-wrap">
+        <div class="cbar-label"><span>Analytics &amp; reporting (Synapse + Power BI)</span><span style="font-weight:700">R4.8M (41%)</span></div>
+        <div class="cbar"><div class="cbar-fill" style="width:100%;background:var(--navy)"></div></div>
+      </div>
+      <div class="cbar-wrap">
+        <div class="cbar-label"><span>AI &amp; ML (Databricks + Azure OpenAI)</span><span style="font-weight:700">R2.9M (25%)</span></div>
+        <div class="cbar"><div class="cbar-fill" style="width:60%;background:var(--purple)"></div></div>
+      </div>
+      <div class="cbar-wrap">
+        <div class="cbar-label"><span>Infrastructure (VMs + networking)</span><span style="font-weight:700">R2.2M (19%)</span></div>
+        <div class="cbar"><div class="cbar-fill" style="width:46%;background:var(--blue)"></div></div>
+      </div>
+      <div class="cbar-wrap">
+        <div class="cbar-label"><span>Storage &amp; data (Lake + ADF + Backup)</span><span style="font-weight:700">R1.4M (12%)</span></div>
+        <div class="cbar"><div class="cbar-fill" style="width:29%;background:var(--teal)"></div></div>
+      </div>
+      <div class="cbar-wrap">
+        <div class="cbar-label"><span>Shared services &amp; security</span><span style="font-weight:700">R0.46M (4%)</span></div>
+        <div class="cbar"><div class="cbar-fill" style="width:10%;background:#888"></div></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- ════════════════════════════════════════
+     PANEL 4 — ANOMALIES & WASTE
+═════════════════════════════════════════ -->
+<div class="panel" id="p4">
+
+  <p class="intro">Cloud waste and anomaly detection runs daily using Azure Cost Management anomaly detection and custom Azure Monitor alerts configured by the Platform Engineering team. Anomalies are flagged when actual spend exceeds the 30-day rolling average by more than 20% on any service. Idle resources (compute running with &lt;5% CPU / &lt;10% network utilisation for 7+ days) are detected weekly and reported to the resource owner for action or decommission.</p>
+
+  <div class="mrow">
+    <div class="mc"><div class="ml">Active Anomalies</div><div class="mv v-r">4</div><div class="ms">Above 20% threshold</div></div>
+    <div class="mc"><div class="ml">Idle Compute Resources</div><div class="mv v-r">7</div><div class="ms">Clusters &amp; VMs</div></div>
+    <div class="mc"><div class="ml">Idle Databases</div><div class="mv v-a">2</div><div class="ms">No connections &gt;7 days</div></div>
+    <div class="mc"><div class="ml">Orphaned Disks</div><div class="mv v-a">2</div><div class="ms">Detached from VMs</div></div>
+    <div class="mc"><div class="ml">Untagged Resources</div><div class="mv v-a">18</div><div class="ms">No cost-centre tag</div></div>
+    <div class="mc"><div class="ml">Estimated Monthly Waste</div><div class="mv v-r">R141k</div><div class="ms">Idle + orphaned</div></div>
+    <div class="mc"><div class="ml">Anomalies Resolved MTD</div><div class="mv v-g">3</div><div class="ms">Actioned this month</div></div>
+    <div class="mc"><div class="ml">Waste as % of Spend</div><div class="mv v-r">12.6%</div><div class="ms">Target: &lt;3%</div></div>
+  </div>
+
+  <!-- Anomaly strip -->
+  <div class="cb">
+    <div class="st">Active cloud anomalies &mdash; June 2026</div>
+    <div class="esc-strip" style="margin-bottom:0">
+      <div class="esc-hdr ano-cols">
+        <span>Anomaly #</span>
+        <span>Service</span>
+        <span>Description</span>
+        <span class="s-num">Expected (Rk)</span>
+        <span class="s-num">Actual (Rk)</span>
+        <span class="s-ctr">% Over</span>
+        <span class="s-ctr">Status</span>
+      </div>
+      <div class="esc-row ano-cols">
+        <div class="esc-ref">ANO-041</div>
+        <div class="s-sub">Databricks</div>
+        <div class="esc-desc">9 clusters running overnight with no active jobs. Auto-termination not configured. DBU consumption continues at full rate during idle periods (22:00&ndash;06:30).</div>
+        <div class="s-num">140</div><div class="s-num v-r">248</div>
+        <div class="s-ctr"><span class="badge bc">+77%</span></div>
+        <div class="s-ctr"><span class="badge bc">Open</span></div>
+      </div>
+      <div class="esc-row ano-cols">
+        <div class="esc-ref">ANO-040</div>
+        <div class="s-sub">Synapse SQL</div>
+        <div class="esc-desc">SQL pool DW2000c running 24/7 including weekends. Workload activity monitored only 07:00&ndash;22:00. About 60 hours per week of idle pool consumption (simulated Azure Monitor reading).</div>
+        <div class="s-num">220</div><div class="s-num v-r">341</div>
+        <div class="s-ctr"><span class="badge bc">+55%</span></div>
+        <div class="s-ctr"><span class="badge bc">Open</span></div>
+      </div>
+      <div class="esc-row ano-cols">
+        <div class="esc-ref">ANO-038</div>
+        <div class="s-sub">Virtual Machines</div>
+        <div class="esc-desc">6 dev/test VMs running D8s SKU with average CPU 8&ndash;12%. Workload does not require 8 vCPUs. Downgrade to D4s would reduce unit cost by 50% with no performance impact.</div>
+        <div class="s-num">110</div><div class="s-num v-a">182</div>
+        <div class="s-ctr"><span class="badge bh">+65%</span></div>
+        <div class="s-ctr"><span class="badge bh">In Progress</span></div>
+      </div>
+      <div class="esc-row ano-cols">
+        <div class="esc-ref">ANO-036</div>
+        <div class="s-sub">Azure Backup</div>
+        <div class="esc-desc">Long-term retention policy retaining snapshots for 7 years on all VMs, including dev/test. LTR requirement only applies to production. Dev/test policy change to 30-day retention would reduce backup storage significantly.</div>
+        <div class="s-num">32</div><div class="s-num v-a">52</div>
+        <div class="s-ctr"><span class="badge bh">+63%</span></div>
+        <div class="s-ctr"><span class="badge bm">Pending</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cg">
+    <div class="cb0">
+      <div class="st">Idle resource inventory &mdash; June 2026 (11 resources, R141k / month)</div>
+      <div class="tw" style="margin-bottom:0">
+        <table class="dt">
+          <thead>
+            <tr>
+              <th>Resource</th>
+              <th>Type</th>
+              <th class="ctr">Idle Days</th>
+              <th class="num">Monthly Cost (Rk)</th>
+              <th class="ctr">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td class="mid">db-cluster-ml-train-01</td><td class="mid">Databricks</td><td class="ctr v-r">21</td><td class="num">R28k</td><td class="ctr"><span class="badge bc">Terminate</span></td></tr>
+            <tr><td class="mid">db-cluster-ml-train-02</td><td class="mid">Databricks</td><td class="ctr v-r">21</td><td class="num">R28k</td><td class="ctr"><span class="badge bc">Terminate</span></td></tr>
+            <tr><td class="mid">db-cluster-analytics-dev</td><td class="mid">Databricks</td><td class="ctr v-r">14</td><td class="num">R22k</td><td class="ctr"><span class="badge bc">Terminate</span></td></tr>
+            <tr><td class="mid">db-cluster-poc-retail</td><td class="mid">Databricks</td><td class="ctr v-a">9</td><td class="num">R18k</td><td class="ctr"><span class="badge bh">Confirm</span></td></tr>
+            <tr><td class="mid">vm-dev-integration-04</td><td class="mid">Azure VM</td><td class="ctr v-r">18</td><td class="num">R12k</td><td class="ctr"><span class="badge bc">Downgrade</span></td></tr>
+            <tr><td class="mid">vm-dev-integration-05</td><td class="mid">Azure VM</td><td class="ctr v-r">18</td><td class="num">R12k</td><td class="ctr"><span class="badge bc">Downgrade</span></td></tr>
+            <tr><td class="mid">vm-test-batch-proc-02</td><td class="mid">Azure VM</td><td class="ctr v-a">11</td><td class="num">R8k</td><td class="ctr"><span class="badge bh">Review</span></td></tr>
+            <tr><td class="mid">sql-db-legacy-reporting</td><td class="mid">Azure SQL DB</td><td class="ctr v-r">31</td><td class="num">R6k</td><td class="ctr"><span class="badge bc">Delete</span></td></tr>
+            <tr><td class="mid">sql-db-clinical-staging</td><td class="mid">Azure SQL DB</td><td class="ctr v-a">12</td><td class="num">R4k</td><td class="ctr"><span class="badge bh">Confirm</span></td></tr>
+            <tr><td class="mid">disk-orphaned-prod-vm08</td><td class="mid">Azure Disk</td><td class="ctr v-r">45</td><td class="num">R2k</td><td class="ctr"><span class="badge bc">Delete</span></td></tr>
+            <tr><td class="mid">disk-orphaned-dev-vm12</td><td class="mid">Azure Disk</td><td class="ctr v-r">38</td><td class="num">R1k</td><td class="ctr"><span class="badge bc">Delete</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="cb0">
+      <div class="st">Waste by root cause &mdash; June 2026</div>
+      <div class="cbar-wrap">
+        <div class="cbar-label"><span>Idle Databricks clusters (no auto-termination)</span><span class="v-r">R96k / month</span></div>
+        <div class="cbar"><div class="cbar-fill" style="width:100%;background:var(--rt)"></div></div>
+      </div>
+      <div class="cbar-wrap">
+        <div class="cbar-label"><span>Idle / oversized VMs</span><span class="v-a">R32k / month</span></div>
+        <div class="cbar"><div class="cbar-fill" style="width:33%;background:var(--ot)"></div></div>
+      </div>
+      <div class="cbar-wrap">
+        <div class="cbar-label"><span>Idle SQL databases</span><span class="v-a">R10k / month</span></div>
+        <div class="cbar"><div class="cbar-fill" style="width:10%;background:var(--at)"></div></div>
+      </div>
+      <div class="cbar-wrap">
+        <div class="cbar-label"><span>Orphaned disks</span><span>R3k / month</span></div>
+        <div class="cbar"><div class="cbar-fill" style="width:3%;background:var(--blue)"></div></div>
+      </div>
+      <div style="height:12px"></div>
+      <div class="st">Anomalies resolved MTD</div>
+      <div class="act-row">
+        <div class="act-ref">ANO-033</div>
+        <div class="act-body">
+          <div class="act-title">Azure Storage &mdash; lifecycle policy applied</div>
+          <div class="act-desc">Tier-down policy moved 4.2 TB of cold data from Hot to Cool tier. Saving: R13k/month (simulated Azure Cost Management reading).</div>
+          <div class="act-meta"><span class="badge bg">Resolved</span><span class="v-g">R13k/month saved</span></div>
+        </div>
+      </div>
+      <div class="act-row">
+        <div class="act-ref">ANO-031</div>
+        <div class="act-body">
+          <div class="act-title">Dev/test VMs &mdash; weekend auto-shutdown enabled</div>
+          <div class="act-desc">14 dev VMs now auto-shutdown at 18:00 Friday and restart 07:00 Monday. Saving: R9k/month.</div>
+          <div class="act-meta"><span class="badge bg">Resolved</span><span class="v-g">R9k/month saved</span></div>
+        </div>
+      </div>
+      <div class="act-row">
+        <div class="act-ref">ANO-028</div>
+        <div class="act-body">
+          <div class="act-title">ADF pipelines &mdash; 18 changed to daily cadence</div>
+          <div class="act-desc">18 ADF pipelines running hourly with no downstream dependency updated to daily. Saving: R4k/month.</div>
+          <div class="act-meta"><span class="badge bg">Resolved</span><span class="v-g">R4k/month saved</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- ════════════════════════════════════════
+     PANEL 5 — OPTIMISATION OPPORTUNITIES
+═════════════════════════════════════════ -->
+<div class="panel" id="p5">
+
+  <p class="intro">Cloud cost optimisation opportunities are identified through Azure Advisor recommendations, Databricks cost analysis, and the monthly FinOps review. Each opportunity is assessed for annual saving quantum, implementation effort (Low / Medium / High), confidence (High / Medium), and approval authority. Opportunities approved by the TIC and CFO are tracked to implementation and savings validation by Finance.</p>
+
+  <div class="mrow">
+    <div class="mc"><div class="ml">Total Identified Savings</div><div class="mv v-g">R2.5M</div><div class="ms">Annualised p.a.</div></div>
+    <div class="mc"><div class="ml">Quick Wins (&lt;30 days)</div><div class="mv v-g">R0.71M</div><div class="ms">Low effort, high confidence</div></div>
+    <div class="mc"><div class="ml">Active (30&ndash;90 days)</div><div class="mv">R0.92M</div><div class="ms">Needs assessment / config</div></div>
+    <div class="mc"><div class="ml">Pipeline (approval needed)</div><div class="mv v-a">R0.87M</div><div class="ms">TIC / CFO decision</div></div>
+    <div class="mc"><div class="ml">Realised YTD</div><div class="mv v-g">R0.31M</div><div class="ms">Finance validated</div></div>
+    <div class="mc"><div class="ml">Next Review</div><div class="mv">15 Jul 2026</div><div class="ms">Monthly FinOps</div></div>
+  </div>
+
+  <div class="tw sh">
+    <table class="dt">
+      <thead>
+        <tr>
+          <th>Opp #</th>
+          <th>Service</th>
+          <th>Opportunity</th>
+          <th class="num">Annual Saving (R)</th>
+          <th class="ctr">Effort</th>
+          <th class="ctr">Confidence</th>
+          <th>Owner</th>
+          <th class="ctr">Target Date</th>
+          <th class="ctr">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="mid v-b">OPT-CLD-01</td>
+          <td class="mid">Databricks</td>
+          <td>Auto-termination (30-min) on all 9 clusters &mdash; eliminates overnight idle DBU consumption</td>
+          <td class="num v-g">R640k</td>
+          <td class="ctr"><span class="breach-pill breach-g">Low</span></td>
+          <td class="ctr"><span class="breach-pill breach-g">High</span></td>
+          <td class="mid">Platform Lead</td>
+          <td class="ctr">30 Jun</td>
+          <td class="ctr"><span class="badge bc">Quick Win</span></td>
+        </tr>
+        <tr>
+          <td class="mid v-b">OPT-CLD-02</td>
+          <td class="mid">Synapse</td>
+          <td>Auto-pause SQL pool outside 06:30&ndash;22:00 &mdash; pre-req: ETL pipeline schedule audit (conservative: about 12% of pool cost; full idle time is larger)</td>
+          <td class="num v-g">R480k</td>
+          <td class="ctr"><span class="breach-pill breach-a">Medium</span></td>
+          <td class="ctr"><span class="breach-pill breach-g">High</span></td>
+          <td class="mid">Platform Lead</td>
+          <td class="ctr">15 Jul</td>
+          <td class="ctr"><span class="badge bg">Active</span></td>
+        </tr>
+        <tr>
+          <td class="mid v-b">OPT-CLD-03</td>
+          <td class="mid">Virtual Machines</td>
+          <td>Downgrade 6 D8s dev/test VMs to D4s (CPU avg 8&ndash;12% &mdash; no performance impact)</td>
+          <td class="num v-g">R220k</td>
+          <td class="ctr"><span class="breach-pill breach-g">Low</span></td>
+          <td class="ctr"><span class="breach-pill breach-g">High</span></td>
+          <td class="mid">Platform Lead / CTO</td>
+          <td class="ctr">15 Jul</td>
+          <td class="ctr"><span class="badge bg">Active</span></td>
+        </tr>
+        <tr>
+          <td class="mid v-b">OPT-CLD-04</td>
+          <td class="mid">Azure IaaS</td>
+          <td>Reserved instance conversion &mdash; 65% of predictable compute to 1-year RI. Upfront R1.2M.</td>
+          <td class="num v-g">R840k</td>
+          <td class="ctr"><span class="breach-pill breach-a">Medium</span></td>
+          <td class="ctr"><span class="breach-pill breach-g">High</span></td>
+          <td class="mid">CDO / CFO</td>
+          <td class="ctr">31 Aug</td>
+          <td class="ctr"><span class="badge bp">Pipeline</span></td>
+        </tr>
+        <tr>
+          <td class="mid v-b">OPT-CLD-05</td>
+          <td class="mid">Azure Data Factory</td>
+          <td>Rationalise 38 duplicate / over-frequent pipelines. 18 already moved to daily (ANO-028), so part of this saving may overlap the realised figure.</td>
+          <td class="num v-g">R220k</td>
+          <td class="ctr"><span class="breach-pill breach-a">Medium</span></td>
+          <td class="ctr"><span class="breach-pill breach-a">Medium</span></td>
+          <td class="mid">Data Eng. Lead</td>
+          <td class="ctr">31 Jul</td>
+          <td class="ctr"><span class="badge bg">Active</span></td>
+        </tr>
+        <tr>
+          <td class="mid v-b">OPT-CLD-06</td>
+          <td class="mid">Azure Backup</td>
+          <td>Reduce dev/test LTR from 7 years to 30 days. Production LTR unchanged at 7 years.</td>
+          <td class="num v-g">R72k</td>
+          <td class="ctr"><span class="breach-pill breach-g">Low</span></td>
+          <td class="ctr"><span class="breach-pill breach-g">High</span></td>
+          <td class="mid">Platform Lead</td>
+          <td class="ctr">30 Jun</td>
+          <td class="ctr"><span class="badge bc">Quick Win</span></td>
+        </tr>
+        <tr>
+          <td class="mid v-b">OPT-CLD-07</td>
+          <td class="mid">Azure Storage</td>
+          <td>Apply tiering policy: data &gt;90 days unused moved Cool &rarr; Archive. Data &gt;365 days deleted if not retained per policy.</td>
+          <td class="num v-g">R28k</td>
+          <td class="ctr"><span class="breach-pill breach-g">Low</span></td>
+          <td class="ctr"><span class="breach-pill breach-a">Medium</span></td>
+          <td class="mid">Data Eng. Lead</td>
+          <td class="ctr">31 Jul</td>
+          <td class="ctr"><span class="badge bm">Pending</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="cg" style="margin-bottom:0">
+    <div class="cb0">
+      <div class="st">OPT-CLD-04 deep-dive &mdash; Reserved Instance conversion plan</div>
+      <div class="card" style="border-left-color:var(--blue)">
+        <div class="card-hdr"><span class="card-title">Scope &mdash; workloads to convert</span><span class="badge bp">1-year RI</span></div>
+        <div class="card-sub">Azure Synapse (DW2000c &mdash; predictable daily workload), Core integration VMs (8 servers, consistent load), Azure Data Factory integration runtime (consistent pipeline volume), Azure SQL DB production instances (4 DBs with flat utilisation profile). Databricks excluded &mdash; variable workload better suited to spot instances.</div>
+      </div>
+      <div class="card" style="border-left-color:var(--gt)">
+        <div class="card-hdr"><span class="card-title">Financial model</span><span class="badge bg">Break-even: Month 4 (assumed)</span></div>
+        <div class="card-sub">Current PAYG monthly spend on targeted workloads: R580k. RI monthly equivalent: R510k. Monthly saving: R70k (about 12%). Upfront commitment: R1.2M (12-month prepay that offsets PAYG charges). Break-even: month 4 after activation (simulated assumption). Saving: R840k over the 12-month term (about R280k in 2026 if active from Sep). CFO to approve, with the CDO presenting, at the 16 Jul TIC.</div>
+      </div>
+      <div class="card" style="border-left-color:var(--ot)">
+        <div class="card-hdr"><span class="card-title">Risk</span><span class="badge bh">Medium</span></div>
+        <div class="card-sub">RI flexibility: Azure 1-year RIs allow instance size flexibility within the same family. Risk: if a workload is decommissioned or migrated before 12 months, unused RI months are wasted. Mitigation: only convert workloads with &gt;95% utilisation history. Databricks kept on PAYG/spot. Synapse most predictable &mdash; lowest risk.</div>
+      </div>
+    </div>
+    <div class="cb0">
+      <div class="st">Databricks cost optimisation &mdash; configuration best practice</div>
+      <div class="stat-row"><span class="stat-label">Auto-termination (30 min idle)</span><span class="stat-val"><span class="badge bc">Not configured</span></span></div>
+      <div class="stat-row"><span class="stat-label">Cluster auto-scaling enabled</span><span class="stat-val"><span class="badge bm">3 of 9 clusters</span></span></div>
+      <div class="stat-row"><span class="stat-label">Spot instances (non-critical jobs)</span><span class="stat-val"><span class="badge bc">Not in use</span></span></div>
+      <div class="stat-row"><span class="stat-label">Job clusters (ephemeral) vs all-purpose</span><span class="stat-val"><span class="badge bm">2 of 9 are job clusters</span></span></div>
+      <div class="stat-row"><span class="stat-label">DBU commitment plan</span><span class="stat-val"><span class="badge bm">None active</span></span></div>
+      <div class="stat-row"><span class="stat-label">Cost tagging compliance</span><span class="stat-val v-a">72%</span></div>
+      <div class="notice notice-a" style="margin-top:10px">Implementing auto-termination alone (OPT-CLD-01) would reduce Databricks cost by R640k p.a. Full Databricks optimisation (auto-terminate + autoscale + spot + job clusters) could save R940k p.a. &mdash; 38% of current Databricks spend. Platform Lead to present full Databricks optimisation plan by 31 Jul.</div>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- ════════════════════════════════════════
+     PANEL 6 — CHARGEBACK & ALLOCATION
+═════════════════════════════════════════ -->
+<div class="panel" id="p6">
+
+  <p class="intro">Cloud cost chargeback allocates Azure spend to business units based on tagged resource consumption. The chargeback model uses a combination of direct allocation (workloads fully owned by one BU) and shared allocation (platform costs split by usage proportion). Monthly chargeback statements are issued to BU finance leads by the 5th of the following month. Disputed allocations are reviewed by the CDO within 10 business days. Unallocated (untagged) resources are held in a central IT cost pool.</p>
+
+  <div class="mrow">
+    <div class="mc"><div class="ml">Total Cloud Spend (Jun)</div><div class="mv">R1.12M</div><div class="ms">To be allocated</div></div>
+    <div class="mc"><div class="ml">Directly Allocated</div><div class="mv v-g">R841k</div><div class="ms">75% of total</div></div>
+    <div class="mc"><div class="ml">Shared / Platform</div><div class="mv">R228k</div><div class="ms">20% of total</div></div>
+    <div class="mc"><div class="ml">Unallocated (untagged)</div><div class="mv v-a">R51k</div><div class="ms">5% &mdash; IT pool</div></div>
+    <div class="mc"><div class="ml">Allocation Disputes (MTD)</div><div class="mv v-a">2</div><div class="ms">Synapse &amp; ML costs</div></div>
+    <div class="mc"><div class="ml">Chargeback Accuracy</div><div class="mv v-a">88%</div><div class="ms">Target: &ge;98%</div></div>
+  </div>
+
+  <!-- Chargeback strip -->
+  <div class="esc-strip" style="margin-bottom:16px">
+    <div class="esc-hdr chg-cols">
+      <span>Business Unit</span>
+      <span>Primary Workloads</span>
+      <span class="s-num">Direct Spend (Rk)</span>
+      <span class="s-num">Shared Alloc (Rk)</span>
+      <span class="s-num">Total Jun (Rk)</span>
+      <span class="s-ctr">Status</span>
+    </div>
+    <div class="esc-row chg-cols">
+      <div class="s-name">Analytics &amp; Data (CDO)</div>
+      <div class="s-sub">Synapse, Databricks, ADF, Data Lake</div>
+      <div class="s-num">R548k</div><div class="s-num">R90k</div><div class="s-num v-r">R638k</div>
+      <div class="s-ctr"><span class="badge bc">Over budget</span></div>
+    </div>
+    <div class="esc-row chg-cols">
+      <div class="s-name">Technology / Platform (CTO)</div>
+      <div class="s-sub">VMs, networking, backup, DR</div>
+      <div class="s-num">R188k</div><div class="s-num">R62k</div><div class="s-num v-a">R250k</div>
+      <div class="s-ctr"><span class="badge bh">Over budget</span></div>
+    </div>
+    <div class="esc-row chg-cols">
+      <div class="s-name">Clinical &amp; Pharmacy</div>
+      <div class="s-sub">Clinical data pipelines, MPI integration</div>
+      <div class="s-num">R48k</div><div class="s-num">R36k</div><div class="s-num">R84k</div>
+      <div class="s-ctr"><span class="badge bg">On budget</span></div>
+    </div>
+    <div class="esc-row chg-cols">
+      <div class="s-name">Supply Chain</div>
+      <div class="s-sub">Demand model, WMS integration</div>
+      <div class="s-num">R32k</div><div class="s-num">R24k</div><div class="s-num">R56k</div>
+      <div class="s-ctr"><span class="badge bg">On budget</span></div>
+    </div>
+    <div class="esc-row chg-cols">
+      <div class="s-name">Retail &amp; Loyalty</div>
+      <div class="s-sub">Promotions model, loyalty analytics</div>
+      <div class="s-num">R25k</div><div class="s-num">R16k</div><div class="s-num">R41k</div>
+      <div class="s-ctr"><span class="badge bg">On budget</span></div>
+    </div>
+    <div class="esc-row chg-cols">
+      <div class="s-name">IT Central (untagged)</div>
+      <div class="s-sub">Unallocated resources</div>
+      <div class="s-num">R51k</div><div class="s-num">R0</div><div class="s-num v-a">R51k</div>
+      <div class="s-ctr"><span class="badge bh">Unallocated</span></div>
+    </div>
+  </div>
+
+  <div class="cg" style="margin-bottom:0">
+    <div class="cb0">
+      <div class="st">Allocation disputes &mdash; June 2026</div>
+      <div class="card" style="border-left-color:var(--ot)">
+        <div class="card-hdr"><span class="card-title">Dispute &mdash; Synapse SQL pool allocation (Analytics vs Finance)</span><span class="badge bh">Under review</span></div>
+        <div class="card-sub">Finance BU disputes R84k of Synapse costs allocated to their cost code. Contention: Finance uses Synapse for GL reporting but the SQL pool is shared with all analytics workloads. CDO to review query-level consumption split by cost code by 5 Jul. Resolution: implement Synapse workload isolation groups to enable per-BU metering.</div>
+      </div>
+      <div class="card" style="border-left-color:var(--ot)">
+        <div class="card-hdr"><span class="card-title">Dispute &mdash; Databricks ML costs (Supply Chain vs AI Team)</span><span class="badge bh">Under review</span></div>
+        <div class="card-sub">Supply Chain team disputes R42k of Databricks DBU costs charged against their budget. Demand Forecasting model (AI-013) uses the shared Databricks cluster but billing is allocated entirely to SC. CDO to implement cluster-level tagging by BU by 31 Jul. Retrospective correction to be agreed between SC and AI Team leads.</div>
+      </div>
+      <div class="stat-row" style="margin-top:12px"><span class="stat-label">Disputes resolved MTD</span><span class="stat-val v-g">1</span></div>
+      <div class="stat-row"><span class="stat-label">Avg dispute resolution time</span><span class="stat-val">8 business days</span></div>
+      <div class="stat-row"><span class="stat-label">Chargeback accuracy (target &ge;98%)</span><span class="stat-val v-a">88%</span></div>
+      <div class="stat-row"><span class="stat-label">Primary accuracy gap</span><span class="stat-val">Untagged resources (18)</span></div>
+    </div>
+    <div class="cb0">
+      <div class="st">Shared platform allocation methodology</div>
+      <div class="stat-row"><span class="stat-label">Shared cost pool (Jun)</span><span class="stat-val">R228k</span></div>
+      <div class="stat-row"><span class="stat-label">Allocation basis</span><span class="stat-val">Compute hours consumed</span></div>
+      <div class="stat-row"><span class="stat-label">Analytics &amp; Data (CDO) share</span><span class="stat-val">39%</span></div>
+      <div class="stat-row"><span class="stat-label">Technology / Platform (CTO) share</span><span class="stat-val">27%</span></div>
+      <div class="stat-row"><span class="stat-label">Clinical &amp; Pharmacy share</span><span class="stat-val">16%</span></div>
+      <div class="stat-row"><span class="stat-label">Supply Chain share</span><span class="stat-val">11%</span></div>
+      <div class="stat-row"><span class="stat-label">Retail &amp; Loyalty share</span><span class="stat-val">7%</span></div>
+      <div class="stat-row"><span class="stat-label">Untagged spend (held outside the pool)</span><span class="stat-val v-a">R51k</span></div>
+      <div class="notice notice-b" style="margin-top:10px">Tagging compliance improvement from 88% to 98% (target by Sep 2026) will eliminate R51k/month unallocated IT pool cost and improve chargeback accuracy from 88% to &gt;98%. Platform Lead to enforce tagging policy via Azure Policy deny-effect from Aug 2026.</div>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- ════════════════════════════════════════
+     PANEL 7 — GOVERNANCE & CONTROLS
+═════════════════════════════════════════ -->
+<div class="panel" id="p7">
+
+  <p class="intro">Cloud financial governance ensures that all significant Azure spend is subject to budget approval, anomaly detection, tagging policy, chargeback allocation, and monthly CFO review. Controls are modelled on the FinOps Foundation Framework domains (design-level alignment only, nothing certified) and, in this scenario, reviewed annually by Internal Audit. The Technology Investment Committee (TIC) reviews cloud financial performance monthly alongside the broader technology investment agenda.</p>
+
+  <div class="mrow">
+    <div class="mc"><div class="ml">FinOps Controls Defined</div><div class="mv">18</div><div class="ms">Across 4 domains</div></div>
+    <div class="mc"><div class="ml">Controls Fully Operative</div><div class="mv v-a">10</div><div class="ms">56% effective</div></div>
+    <div class="mc"><div class="ml">Controls Partial / Gap</div><div class="mv v-a">6</div><div class="ms">Remediation in progress</div></div>
+    <div class="mc"><div class="ml">Controls Not Yet In Place</div><div class="mv v-r">2</div><div class="ms">Design required</div></div>
+    <div class="mc"><div class="ml">Open Governance Actions</div><div class="mv v-a">14</div><div class="ms">10 itemised below</div></div>
+    <div class="mc"><div class="ml">Overdue Actions</div><div class="mv v-r">3</div><div class="ms">Past agreed date</div></div>
+    <div class="mc"><div class="ml">Next TIC Review</div><div class="mv">16 Jul 2026</div><div class="ms">Monthly cloud item</div></div>
+    <div class="mc"><div class="ml">Next CFO / CIO Review</div><div class="mv v-a">5 Jul 2026</div><div class="ms">Joint cost session</div></div>
+  </div>
+
+  <!-- FinOps RACI -->
+  <div class="cb">
+    <div class="st">Cloud financial governance RACI &mdash; by control domain</div>
+    <div class="tw" style="margin-bottom:0">
+      <table class="raci-table">
+        <thead>
+          <tr>
+            <td class="raci-hdr" style="text-align:left;width:200px">Control Domain</td>
+            <td class="raci-hdr">CDO</td>
+            <td class="raci-hdr">CFO</td>
+            <td class="raci-hdr">CTO</td>
+            <td class="raci-hdr">Platform Lead</td>
+            <td class="raci-hdr">Finance</td>
+            <td class="raci-hdr">TIC</td>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="raci-lbl">Budget setting &amp; approval</td>
+            <td class="raci-b">C</td><td class="raci-g">A</td><td class="raci-b">C</td>
+            <td class="raci-n">I</td><td class="raci-g">R</td><td class="raci-n">I</td>
+          </tr>
+          <tr>
+            <td class="raci-lbl">Monthly spend review</td>
+            <td class="raci-g">A</td><td class="raci-b">C</td><td class="raci-b">C</td>
+            <td class="raci-g">R</td><td class="raci-b">C</td><td class="raci-n">I</td>
+          </tr>
+          <tr>
+            <td class="raci-lbl">Anomaly detection &amp; response</td>
+            <td class="raci-b">C</td><td class="raci-n">I</td><td class="raci-b">C</td>
+            <td class="raci-g">A/R</td><td class="raci-n">I</td><td class="raci-n">I</td>
+          </tr>
+          <tr>
+            <td class="raci-lbl">Tagging policy enforcement</td>
+            <td class="raci-b">C</td><td class="raci-n">I</td><td class="raci-g">A</td>
+            <td class="raci-g">R</td><td class="raci-n">I</td><td class="raci-n">I</td>
+          </tr>
+          <tr>
+            <td class="raci-lbl">Chargeback allocation</td>
+            <td class="raci-g">A</td><td class="raci-b">C</td><td class="raci-n">I</td>
+            <td class="raci-g">R</td><td class="raci-g">R</td><td class="raci-n">I</td>
+          </tr>
+          <tr>
+            <td class="raci-lbl">Optimisation implementation</td>
+            <td class="raci-g">A</td><td class="raci-b">C</td><td class="raci-b">C</td>
+            <td class="raci-g">R</td><td class="raci-n">I</td><td class="raci-n">I</td>
+          </tr>
+          <tr>
+            <td class="raci-lbl">RI / commitment purchases</td>
+            <td class="raci-b">C</td><td class="raci-g">A</td><td class="raci-b">C</td>
+            <td class="raci-g">R</td><td class="raci-b">C</td><td class="raci-b">C</td>
+          </tr>
+          <tr>
+            <td class="raci-lbl">TIC / Board reporting</td>
+            <td class="raci-g">A/R</td><td class="raci-g">R</td><td class="raci-b">C</td>
+            <td class="raci-b">C</td><td class="raci-b">C</td><td class="raci-n">I</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Actions register -->
+  <div class="cb0">
+    <div class="st">Cloud financial governance actions register &mdash; June 2026</div>
+    <div class="act-row">
+      <div class="act-ref">CFG-101</div>
+      <div class="act-body">
+        <div class="act-title">Databricks auto-termination &mdash; configure all 9 clusters (OPT-CLD-01)</div>
+        <div class="act-desc">Set 30-minute auto-termination on all 9 Databricks clusters in MGSA-Prod-01. Azure DevOps pipeline change to apply cluster policy. Takes 2 hours to implement. No downtime: jobs auto-trigger cluster restart. Estimated saving: R640k p.a. Platform Lead to complete by 30 Jun 2026.</div>
+        <div class="act-meta"><span class="badge bc">Critical &mdash; Quick Win</span><span class="badge bm">Due: 30 Jun</span><span>Platform Lead</span></div>
+      </div>
+    </div>
+    <div class="act-row">
+      <div class="act-ref">CFG-102</div>
+      <div class="act-body">
+        <div class="act-title">Synapse SQL pool auto-pause &mdash; ETL assessment then configure (OPT-CLD-02)</div>
+        <div class="act-desc">Pre-requisite: Platform Lead to audit all ADF pipeline schedules that access Synapse. Confirm none require pool during 22:00&ndash;06:30. If clear: configure auto-pause via Azure Portal schedule. Synapse pauses reduce cost to near-zero when not active. ETL assessment target: 30 Jun. Auto-pause config: 15 Jul. Saving: R480k p.a.</div>
+        <div class="act-meta"><span class="badge bc">Critical</span><span class="badge bm">Due: 15 Jul</span><span>Platform Lead / Data Eng.</span></div>
+      </div>
+    </div>
+    <div class="act-row">
+      <div class="act-ref">CFG-103</div>
+      <div class="act-body">
+        <div class="act-title">Azure VM right-sizing &mdash; D8s to D4s for 6 dev/test VMs (OPT-CLD-03)</div>
+        <div class="act-desc">Azure Advisor confirms 6 VMs averaging 8&ndash;12% CPU are eligible for D4s downsize. CTO to approve change. Platform Lead to action within 48 hours of approval. Workload owners (data engineering, clinical dev) to confirm no objection. Change window: next Saturday 22:00 maintenance slot. Saving: R220k p.a.</div>
+        <div class="act-meta"><span class="badge bc">Critical</span><span class="badge bm">Due: 15 Jul</span><span>Platform Lead / CTO</span></div>
+      </div>
+    </div>
+    <div class="act-row">
+      <div class="act-ref">CFG-104</div>
+      <div class="act-body">
+        <div class="act-title">Reserved instance conversion &mdash; CDO and CFO approval at TIC (OPT-CLD-04)</div>
+        <div class="act-desc">CDO to prepare RI business case: workload scope, 5-year NPV comparison (PAYG vs 1-yr RI vs 3-yr RI), flexibility analysis, and risk assessment. Present at 16 Jul TIC for CFO and CIO approval. If approved: Platform Lead to purchase RI via Azure portal by 31 Aug. Saving from Sep: R70k/month. Upfront commitment: R1.2M.</div>
+        <div class="act-meta"><span class="badge bc">Critical</span><span class="badge bm">Decision: 16 Jul TIC</span><span>CDO / CFO / CIO</span></div>
+      </div>
+    </div>
+    <div class="act-row">
+      <div class="act-ref">CFG-105</div>
+      <div class="act-body">
+        <div class="act-title">Azure tagging compliance improvement &mdash; enforce via Azure Policy (CFG target: 98%)</div>
+        <div class="act-desc">Current tagging compliance 88% (18 untagged resources). Platform Lead to create Azure Policy with deny-effect for resources missing mandatory tags (environment, workload, cost-centre, owner). Policy to apply from Aug 2026 to all new resources. Existing untagged resources to be remediated by 31 Jul. Improves chargeback accuracy from 88% to &gt;98%.</div>
+        <div class="act-meta"><span class="badge bh">High</span><span class="badge bm">Due: 31 Jul</span><span>Platform Lead</span></div>
+      </div>
+    </div>
+    <div class="act-row">
+      <div class="act-ref">CFG-106</div>
+      <div class="act-body">
+        <div class="act-title">Chargeback dispute resolution &mdash; Synapse workload isolation and Databricks cluster tagging</div>
+        <div class="act-desc">Two active disputes: Synapse Finance vs Analytics allocation (R84k), and Databricks Supply Chain vs AI Team (R42k). CDO to implement Synapse workload groups with BU-level query isolation by 31 Jul. Platform Lead to apply BU cost tags to all Databricks clusters by 31 Jul. Retrospective corrections agreed with BU finance leads by 15 Jul.</div>
+        <div class="act-meta"><span class="badge bh">High</span><span class="badge bm">Due: 31 Jul</span><span>CDO / Platform Lead / Finance</span></div>
+      </div>
+    </div>
+    <div class="act-row">
+      <div class="act-ref">CFG-107</div>
+      <div class="act-body">
+        <div class="act-title">Azure Backup policy correction &mdash; dev/test LTR from 7 years to 30 days (OPT-CLD-06)</div>
+        <div class="act-desc">Dev/test VMs incorrectly configured with production-level 7-year LTR policy. Change dev/test vault policy to 30-day retention. Production policy unchanged. CTO to approve. Change to be implemented in next maintenance window. Saving: R72k p.a. Confirm change does not affect any DR testing data requirements.</div>
+        <div class="act-meta"><span class="badge bc">Quick Win</span><span class="badge bm">Due: 30 Jun</span><span>Platform Lead / CTO</span></div>
+      </div>
+    </div>
+    <div class="act-row">
+      <div class="act-ref">CFG-108</div>
+      <div class="act-body">
+        <div class="act-title">Databricks full optimisation plan &mdash; auto-scale, spot, job clusters (beyond OPT-CLD-01)</div>
+        <div class="act-desc">OPT-CLD-01 (auto-termination) is the quick win. Platform Lead to also present full Databricks optimisation plan covering: (1) enable auto-scaling on remaining 6 clusters, (2) move non-critical batch jobs to spot instances (60&ndash;90% cost reduction), (3) convert ad-hoc all-purpose clusters to job clusters for automated workloads. Additional saving potential: R300k p.a. Plan to CDO by 31 Jul.</div>
+        <div class="act-meta"><span class="badge bh">High</span><span class="badge bm">Due: 31 Jul</span><span>Platform Lead / CDO</span></div>
+      </div>
+    </div>
+    <div class="act-row">
+      <div class="act-ref">CFG-109</div>
+      <div class="act-body">
+        <div class="act-title">Monthly cloud FinOps report to TIC &mdash; standardise format and cadence &mdash; <span class="badge bc">Overdue</span></div>
+        <div class="act-desc">Was due Mar 2026. No standardised monthly cloud cost report submitted to TIC. Ad-hoc requests only. CDO to design standard FinOps report template (spend vs budget, anomalies, waste, savings tracker, chargeback summary) and submit to TIC from Jul 2026 onwards. Power BI report to auto-refresh from Azure Cost Management export.</div>
+        <div class="act-meta"><span class="badge bh">High</span><span class="badge bc">Overdue: Mar 2026</span><span>CDO / Platform Lead</span></div>
+      </div>
+    </div>
+    <div class="act-row">
+      <div class="act-ref">CFG-110</div>
+      <div class="act-body">
+        <div class="act-title">FinOps capability maturity assessment &mdash; benchmark against FinOps Foundation framework</div>
+        <div class="act-desc">No formal FinOps maturity assessment has been completed. CDO to commission assessment against the FinOps Foundation Framework and its Crawl/Walk/Run maturity model. Output to inform H2 2026 FinOps programme priorities. Target: assessment complete Sep 2026.</div>
+        <div class="act-meta"><span class="badge bm">Medium</span><span class="badge bm">Due: Sep 2026</span><span>CDO</span></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<section class="portfolio-about" id="about-this-portfolio">
+  <h2>About This Portfolio</h2>
+  <p><strong>Prepared by:</strong> Divan Gerber &mdash; Independent Portfolio Exercise.</p>
+  <p>This page is part of a self-directed learning project built to demonstrate practical Governance, Risk &amp; Compliance and IT Audit capability. &ldquo;MedRetail Group South Africa&rdquo; and its governance structures are fictional constructs created for this exercise. No real organization, department, employee, board, or confidential data is represented here, and the dashboard is a static design prototype, not a live system or cloud-billing connection. Real product and framework names (listed in the banner above) are scenario context only; every figure and finding attributed to them is invented. Cloud costs, savings, controls and the committee decisions and roles shown are simulated scenario content, and no real cloud spend or FinOps results are claimed. This is not a role or office Divan Gerber has held.</p>
+</section>
+
+</body>
+</html>
